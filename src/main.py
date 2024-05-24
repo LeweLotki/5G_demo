@@ -1,67 +1,46 @@
-from dataloader import Data, TransformedData
-import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt
 from torchvision.transforms.functional import to_pil_image
+from torch.utils.data import DataLoader, TensorDataset
 import torch
-
-import matplotlib
-import matplotlib.pyplot as plt
-from torchvision.transforms.functional import to_pil_image
+from load_data import load_images_and_labels, transform_images
 
 def main():
-    matplotlib.use('TkAgg')
-    img_dir = '../data/Humans'  # Update this path as needed
-    dataset = TransformedData(img_dir=img_dir)
-    dataloader = dataset.get_dataloader(batch_size=32, shuffle=True)
+    img_dir = '../data/Humans'  # Ensure this path is correct
+    images, labels = load_images_and_labels(img_dir, max_size=20)  # Small number for testing
+    
+    # Transform images
+    images = transform_images(images)
+    
+    # Convert lists to tensors
+    images_tensor = torch.stack(images)
+    labels_tensor = torch.tensor(labels)
+    
+    # Create a TensorDataset and DataLoader
+    dataset = TensorDataset(images_tensor, labels_tensor)
+    dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
+    
+    # Debug: Print the length of the dataset
+    print(f"Dataset length: {len(dataset)}")
 
-    show_image_pairs(dataloader, num_pairs=5)
+    for batch_idx, (images, labels) in enumerate(dataloader):
+        print(f"Batch {batch_idx + 1}:")
+        print(f"Images tensor shape: {images.shape}")
+        print(f"Labels tensor shape: {labels.shape}")
+        print(f"Labels: {labels}")
 
-
-
-def show_image_pairs(dataloader, num_pairs=5):
-    dataloader_iter = iter(dataloader)
-
-    for i in range(num_pairs):
-        print(f"Fetching batch {i+1}/{num_pairs}")
-        try:
-            batch = next(dataloader_iter)
-        except StopIteration:
-            print("No more batches available.")
-            break
-
-        print(f"Batch type: {type(batch)}")
-        print(f"Batch shape: {batch.shape}")
-
-        if not isinstance(batch, torch.Tensor):
-            print("Batch is not a tensor.")
-            continue
-
-        # Assuming batch size is 32, process the first two images for demonstration
-        images = batch[:2]
-        labels = [0, 1]  # Dummy labels, update according to your dataset
-
-        if len(images) < 2:
-            print("Not enough images in the batch to display pairs.")
-            continue
-
-        print("Preparing to display images...")
-
-        fig, axes = plt.subplots(1, 2, figsize=(10, 5))
-
-        for j in range(2):
+        fig, axes = plt.subplots(1, len(images), figsize=(15, 5))
+        for j in range(len(images)):
             image = images[j]
-            label = labels[j]
-            print(f"Displaying image {j+1} with label {label}")
-            image = to_pil_image(image)
+            label = labels[j].item()  # Ensure label is a scalar
+            print(f"Label type: {type(label)}, Label value: {label}")  # Debug print
+            image = to_pil_image(image)  # Convert tensor to PIL Image
+
             axes[j].imshow(image)
             axes[j].set_title(f'Label: {label}')
             axes[j].axis('off')
 
         plt.tight_layout()
         plt.show()
-
-        print("Images displayed.")
-
 
 if __name__ == '__main__':
     main()
