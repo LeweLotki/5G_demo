@@ -1,4 +1,4 @@
-from data import Data, TransformedData
+from dataloader import Data, TransformedData
 import matplotlib.pyplot as plt
 
 def main():
