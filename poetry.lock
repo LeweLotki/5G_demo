@@ -1239,7 +1239,17 @@ files = [
     {file = "tzdata-2024.1.tar.gz", hash = "sha256:2674120f8d891909751c38abcdfd386ac0a5a1127954fbc332af6b5ceae07efd"},
 ]
 
+[[package]]
+name = "ypstruct"
+version = "0.0.2"
+description = "A simple and easy-to-use C/C++/MATLAB-like structure type for Python"
+optional = false
+python-versions = "*"
+files = [
+    {file = "ypstruct-0.0.2.tar.gz", hash = "sha256:26143a45978083849bff2c373041c96ae9dbfa226164e82fb51ec966065f8361"},
+]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "7c971ba9ba8ae9f8aac83271e05b40556c9e2ae189fa56d7cd3352c64c945d5f"
+content-hash = "72d8c5b0de182b7437fe389e03b54cb39dd3466ff655bb3ef44b06cbe576a669"

@@ -1,55 +1,32 @@
+# main.py
 import torch
-import torch.nn as nn
-import torch.optim as optim
 from dataloader import TransformedData
-from classification import Classificator, Visualizer
-
+from classification import Classificator, Visualizer, Trainer
+from config import dataset_config, training_config
 
 def main():
     # Load data
-    img_dir = '../data/Humans'
-    data = TransformedData(img_dir, max_size=20)
-    dataloader = data.get_dataloader()
+    data = TransformedData(
+        img_dir=dataset_config.img_dir, 
+        max_size=dataset_config.number_of_images
+    )
 
     # Initialize the model, loss function, and visualizer
     model = Classificator(num_classes=2)
-    criterion = nn.CrossEntropyLoss()
+    criterion = torch.nn.CrossEntropyLoss()
     visualizer = Visualizer()
+    trainer = Trainer(
+        model=model, 
+        criterion=criterion, 
+        visualizer=visualizer, 
+        batch_size=training_config.batch_size
+    )
 
-    # Training the model
-    num_epochs = 5
-    for epoch in range(num_epochs):
-        running_loss = 0.0
-        for i, (inputs, labels) in enumerate(dataloader, 0):
-            # Zero the parameter gradients
-            model.optimizer.zero_grad()
-
-            # Forward pass
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
-            # Backward pass and optimization
-            loss.backward()
-            model.optimizer.step()
-
-            # Update metrics
-            visualizer.update_metrics(outputs, labels, loss.item())
-
-            # Print statistics
-            running_loss += loss.item()
-            if i % 10 == 9:  # Print every 10 mini-batches
-                print(f'[Epoch {epoch + 1}, Batch {i + 1}] loss: {running_loss / 10:.3f}')
-                running_loss = 0.0
-
-    print('Finished Training')
-
-    # Plot metrics
-    visualizer.plot_metrics()
-
-    # Calculate final metrics on the whole dataset
-    visualizer.calculate_final_metrics(model, dataloader)
-
-    # Display some images and their predicted and actual labels
-    visualizer.show_images_with_labels(dataloader, model)
+    # Train the model
+    trained_model = trainer.train(
+        dataset=data.get_dataset(), 
+        num_epochs=training_config.number_of_epochs
+    )
 
 if __name__ == '__main__':
     main()
