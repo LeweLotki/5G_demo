@@ -6,10 +6,14 @@ import random
 import torch
 from torchvision import transforms
 from torch.utils.data import DataLoader, TensorDataset
+from torchvision import models
+from torchvision.models.segmentation import DeepLabV3_ResNet101_Weights
+import torchvision.transforms.functional as F
 
 class TransformedData:
     
     def __init__(self, img_dir, max_size=5000):
+        self.segmentation_model = self.__load_segmentation_model()
         
         images, labels = self.__load_images_and_labels(
             img_dir=img_dir, 
@@ -29,6 +33,11 @@ class TransformedData:
     
     def get_dataset(self):
         return self.dataset
+    
+    def __load_segmentation_model(self):
+        weights = DeepLabV3_ResNet101_Weights.COCO_WITH_VOC_LABELS_V1
+        model = models.segmentation.deeplabv3_resnet101(weights=weights).eval()
+        return model
     
     def __load_images_and_labels(self, img_dir, max_size=5000):
         img_names = os.listdir(img_dir)[:max_size]
@@ -59,43 +68,39 @@ class TransformedData:
 
     def __apply_mild_distortion(self, image):
         img_np = np.array(image)
-        noise_level = random.randint(5, 15)  # Mild noise level
-        noise = np.random.normal(0, noise_level, img_np.shape).astype(np.uint8)
-        img_np = cv2.add(img_np, noise)
-        img_np = np.clip(img_np, 0, 255).astype(np.uint8)
-        img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2HSV)
-        img_np[..., 1] = img_np[..., 1] // random.uniform(1.2, 1.5)
-        img_np = cv2.cvtColor(img_np, cv2.COLOR_HSV2RGB)
-        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), random.randint(10, 70)]
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), random.randint(30, 70)]
         _, encimg = cv2.imencode('.jpg', img_np, encode_param)
         img_np = cv2.imdecode(encimg, 1)
         return Image.fromarray(img_np)
 
     def __apply_background_distortion(self, image):
         img_np = np.array(image)
-        gray = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)
-        blurred = cv2.GaussianBlur(gray, (15, 15), 0)
-        _, mask = cv2.threshold(blurred, 200, 255, cv2.THRESH_BINARY)
-        mask_inv = cv2.bitwise_not(mask)
-        bg = cv2.GaussianBlur(img_np, (25, 25), 50)
-        fg = cv2.bitwise_and(img_np, img_np, mask=mask)
+        input_tensor = F.to_tensor(image).unsqueeze(0)
+        with torch.no_grad():
+            output = self.segmentation_model(input_tensor)['out'][0]
+        output_predictions = output.argmax(0).byte().cpu().numpy()
+        mask = output_predictions == 15  # Person class in COCO dataset
+
+        bg = cv2.GaussianBlur(img_np, (15, 15), 10)  # Reduced kernel size and standard deviation
+        fg = cv2.bitwise_and(img_np, img_np, mask=mask.astype(np.uint8) * 255)
         combined = cv2.add(bg, fg)
         return Image.fromarray(combined)
 
     def __apply_severe_distortion(self, image):
         img_np = np.array(image)
-        noise_level = random.randint(0, 1)  # Higher noise level for severe distortion
+        noise_level = random.randint(20, 50)  # Higher noise level for severe distortion
         noise = np.random.normal(0, noise_level, img_np.shape).astype(np.uint8)
         img_np = cv2.add(img_np, noise)
         img_np = np.clip(img_np, 0, 255).astype(np.uint8)
-        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), random.randint(80, 100)]
+        img_np = cv2.GaussianBlur(img_np, (5, 5), 0)  # Adding blur
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), random.randint(1, 10)]
         _, encimg = cv2.imencode('.jpg', img_np, encode_param)
         img_np = cv2.imdecode(encimg, 1)
         return Image.fromarray(img_np), 1
-    5
+
     def __transform_images(self, images):
         transform = transforms.Compose([
-            transforms.Resize((720, 720)),
+            transforms.Resize((256, 256)),
             transforms.ToTensor(),
         ])
         return [transform(image) for image in images]
