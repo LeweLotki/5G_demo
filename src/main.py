@@ -28,5 +28,12 @@ def main():
         num_epochs=training_config.number_of_epochs
     )
 
+    # Save the model
+    torch.save(
+        trained_model.state_dict(), 
+        training_config.save_model_path
+    )
+    print(f'Model saved to {training_config.save_model_path}')
+
 if __name__ == '__main__':
     main()
