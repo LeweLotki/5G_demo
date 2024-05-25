@@ -1,28 +1,17 @@
 import matplotlib.pyplot as plt
 from torchvision.transforms.functional import to_pil_image
-from torch.utils.data import DataLoader, TensorDataset
 import torch
-from load_data import load_images_and_labels, transform_images
+from dataloader import TransformedData
+
 
 def main():
-    img_dir = '../data/Humans'  # Ensure this path is correct
-    images, labels = load_images_and_labels(img_dir, max_size=20)  # Small number for testing
-    
-    # Transform images
-    images = transform_images(images)
-    
-    # Convert lists to tensors
-    images_tensor = torch.stack(images)
-    labels_tensor = torch.tensor(labels)
-    
-    # Create a TensorDataset and DataLoader
-    dataset = TensorDataset(images_tensor, labels_tensor)
-    dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
-    
-    # Debug: Print the length of the dataset
-    print(f"Dataset length: {len(dataset)}")
+    img_dir = '../data/Humans'
+    data = TransformedData(img_dir, max_size=20)
+    dataloader = data.get_dataloader()
+    # dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
 
     for batch_idx, (images, labels) in enumerate(dataloader):
+        # print(f'debug: {type(data)}')
         print(f"Batch {batch_idx + 1}:")
         print(f"Images tensor shape: {images.shape}")
         print(f"Labels tensor shape: {labels.shape}")
