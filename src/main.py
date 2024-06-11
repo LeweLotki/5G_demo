@@ -12,8 +12,8 @@ def main():
     )
 
     # Initialize the model, loss function, and visualizer
-    model = Classificator(num_classes=2)
-    criterion = torch.nn.CrossEntropyLoss()
+    model = Classificator(num_classes=1)  # Set num_classes to 1 for binary classification
+    criterion = torch.nn.BCEWithLogitsLoss()  # Use BCEWithLogitsLoss for binary classification
     visualizer = Visualizer()
     trainer = Trainer(
         model=model, 

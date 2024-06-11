@@ -9,8 +9,8 @@ class Trainer:
         self.batch_size = batch_size
         self.test_size = test_size
 
-        # Set the device to CPU
-        self.device = torch.device("cpu")
+        # Set the device to CPU or GPU
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)  # Move the model to the appropriate device
 
     def train(self, dataset, num_epochs):
@@ -37,6 +37,7 @@ class Trainer:
                 outputs = self.model(inputs)
 
                 loss = self.criterion(outputs, labels)
+
                 # Backward pass and optimization
                 loss.backward()
                 self.model.optimizer.step()

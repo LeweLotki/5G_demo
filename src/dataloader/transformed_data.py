@@ -100,8 +100,7 @@ class TransformedData:
 
     def __transform_images(self, images):
         transform = transforms.Compose([
-            transforms.Resize((256, 256)),
+            transforms.Resize((160, 160)),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
         return [transform(image) for image in images]
