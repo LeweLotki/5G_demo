@@ -1,4 +1,3 @@
-# trainer.py
 import torch
 from torch.utils.data import DataLoader, random_split
 
@@ -9,6 +8,10 @@ class Trainer:
         self.visualizer = visualizer
         self.batch_size = batch_size
         self.test_size = test_size
+
+        # Set the device to CPU
+        self.device = torch.device("cpu")
+        self.model.to(self.device)  # Move the model to the appropriate device
 
     def train(self, dataset, num_epochs):
         # Split dataset into training and testing sets
@@ -24,14 +27,14 @@ class Trainer:
             running_loss = 0.0
             self.model.train()
             for i, (inputs, labels) in enumerate(train_loader, 0):
+                inputs = inputs.to(self.device)
+                labels = labels.to(self.device).float().view(-1, 1)  # Ensure labels are of shape (batch_size, 1)
+
                 # Zero the parameter gradients
                 self.model.optimizer.zero_grad()
 
                 # Forward pass
                 outputs = self.model(inputs)
-
-                # Ensure labels are of the correct shape
-                labels = labels.view(-1)  # Ensure labels are 1D
 
                 loss = self.criterion(outputs, labels)
                 # Backward pass and optimization
@@ -68,23 +71,25 @@ class Trainer:
         with torch.no_grad():
             train_loss, train_correct = 0.0, 0
             for inputs, labels in train_loader:
+                inputs = inputs.to(self.device)
+                labels = labels.to(self.device).float().view(-1, 1)  # Ensure labels are of shape (batch_size, 1)
                 outputs = self.model(inputs)
-                labels = labels.view(-1)  # Ensure labels are 1D
                 loss = self.criterion(outputs, labels)
                 train_loss += loss.item()
-                _, predicted = torch.max(outputs, 1)
-                train_correct += (predicted == labels).sum().item()
+                preds = (outputs > 0.5).float()
+                train_correct += (preds == labels).sum().item()
             train_loss /= len(train_loader)
             train_accuracy = train_correct / len(train_loader.dataset)
 
             test_loss, test_correct = 0.0, 0
             for inputs, labels in test_loader:
+                inputs = inputs.to(self.device)
+                labels = labels.to(self.device).float().view(-1, 1)  # Ensure labels are of shape (batch_size, 1)
                 outputs = self.model(inputs)
-                labels = labels.view(-1)  # Ensure labels are 1D
                 loss = self.criterion(outputs, labels)
                 test_loss += loss.item()
-                _, predicted = torch.max(outputs, 1)
-                test_correct += (predicted == labels).sum().item()
+                preds = (outputs > 0.5).float()
+                test_correct += (preds == labels).sum().item()
             test_loss /= len(test_loader)
             test_accuracy = test_correct / len(test_loader.dataset)
 

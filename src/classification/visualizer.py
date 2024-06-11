@@ -1,4 +1,3 @@
-# visualizer.py
 import matplotlib.pyplot as plt
 import torch
 import numpy as np
@@ -12,7 +11,7 @@ class Visualizer:
 
     def update_metrics(self, outputs, labels, loss):
         self.losses.append(loss)
-        _, preds = torch.max(outputs, 1)
+        preds = (outputs > 0.5).float()
         accuracy = (preds == labels).float().mean()
         self.accuracies.append(accuracy.item())
 
@@ -44,22 +43,24 @@ class Visualizer:
         with torch.no_grad():
             for inputs, labels in dataloader:
                 outputs = model(inputs)
-                all_outputs.extend(outputs.cpu().numpy())
+                all_outputs.extend(outputs.cpu().numpy().flatten())
                 all_labels.extend(labels.cpu().numpy().flatten())  # Ensure labels are flattened to 1D
 
         all_outputs = np.array(all_outputs)
         all_labels = np.array(all_labels)
 
+        # Binarize the outputs
+        preds = (all_outputs > 0.5).astype(int)
+
         # Calculate metrics
-        preds = np.argmax(all_outputs, axis=1)
         accuracy = accuracy_score(all_labels, preds)
-        precision = precision_score(all_labels, preds, average='weighted', zero_division=0)
-        recall = recall_score(all_labels, preds, average='weighted', zero_division=0)
-        f1 = f1_score(all_labels, preds, average='weighted', zero_division=0)
-        
+        precision = precision_score(all_labels, preds, average='binary', zero_division=0)
+        recall = recall_score(all_labels, preds, average='binary', zero_division=0)
+        f1 = f1_score(all_labels, preds, average='binary', zero_division=0)
+
         # Check if both classes are present in the labels
         if len(np.unique(all_labels)) > 1:
-            auc = roc_auc_score(all_labels, all_outputs[:, 1], average='weighted')
+            auc = roc_auc_score(all_labels, all_outputs)
         else:
             auc = float('nan')
             print("Warning: Only one class present in y_true. ROC AUC score is not defined.")
@@ -78,7 +79,7 @@ class Visualizer:
                     break
 
                 outputs = model(images)
-                _, predicted = torch.max(outputs, 1)
+                preds = (outputs > 0.5).float()
 
                 batch_size = len(images)
                 fig, axes = plt.subplots(1, batch_size, figsize=(15, 5))
@@ -88,7 +89,7 @@ class Visualizer:
 
                 for j in range(batch_size):
                     image = to_pil_image(images[j])
-                    label = predicted[j].item()
+                    label = preds[j].item()
                     actual_label = labels[j].item() if labels.dim() > 0 else labels.item()  # Handle 0-dim tensor
                     axes[j].imshow(image)
                     axes[j].set_title(f'Pred: {label}, Act: {actual_label}')
