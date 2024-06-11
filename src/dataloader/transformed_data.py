@@ -48,7 +48,7 @@ class TransformedData:
             img_path = os.path.join(img_dir, img_name)
             image = Image.open(img_path).convert("RGB")
 
-            # Randomly decide on the type and severity of distortion
+            
             if idx < max_size // 2:
                 image, label = self.__apply_mild_or_background_distortion(image)
             else:
@@ -60,7 +60,7 @@ class TransformedData:
         return images, labels
 
     def __apply_mild_or_background_distortion(self, image):
-        # Randomly choose between mild or background distortion
+        
         if random.random() < 0.5:
             return self.__apply_mild_distortion(image), 0
         else:
@@ -79,20 +79,20 @@ class TransformedData:
         with torch.no_grad():
             output = self.segmentation_model(input_tensor)['out'][0]
         output_predictions = output.argmax(0).byte().cpu().numpy()
-        mask = output_predictions == 15  # Person class in COCO dataset
+        mask = output_predictions == 15  
 
-        bg = cv2.GaussianBlur(img_np, (15, 15), 10)  # Reduced kernel size and standard deviation
+        bg = cv2.GaussianBlur(img_np, (15, 15), 10)  
         fg = cv2.bitwise_and(img_np, img_np, mask=mask.astype(np.uint8) * 255)
         combined = cv2.add(bg, fg)
         return Image.fromarray(combined)
 
     def __apply_severe_distortion(self, image):
         img_np = np.array(image)
-        noise_level = random.randint(20, 50)  # Higher noise level for severe distortion
+        noise_level = random.randint(20, 50)  
         noise = np.random.normal(0, noise_level, img_np.shape).astype(np.uint8)
         img_np = cv2.add(img_np, noise)
         img_np = np.clip(img_np, 0, 255).astype(np.uint8)
-        img_np = cv2.GaussianBlur(img_np, (5, 5), 0)  # Adding blur
+        img_np = cv2.GaussianBlur(img_np, (5, 5), 0)  
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), random.randint(1, 10)]
         _, encimg = cv2.imencode('.jpg', img_np, encode_param)
         img_np = cv2.imdecode(encimg, 1)
