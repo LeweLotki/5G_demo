@@ -1,10 +1,16 @@
 
 import torch
-from dataloader import TransformedData
+from dataloader import TransformedData, Compressor
 from classification import Classificator, Visualizer, Trainer
 from config import dataset_config, training_config
 
 def main():
+    
+    compressor = Compressor(
+        '..\\data\\videos\\original', 
+        '..\\data\\videos\\compressed'
+    )
+    compressor.compress_videos()
     
     data = TransformedData(
         img_dir=dataset_config.img_dir, 
