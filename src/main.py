@@ -1,13 +1,23 @@
-
 import torch
+
 from dataloader import (
     Compressor, 
     VideoDatasetSplitter, 
     FrameSampler, 
     VideoFrameDataset
 )
-from classification import Classificator, Visualizer, Trainer
-from config import dataset_config, training_config
+
+from classification import (
+    Classificator,
+    Visualizer,
+    Trainer,
+    Evaluator
+)
+
+from config import (
+    dataset_config, 
+    training_config
+)
 
 def main():
     
@@ -32,8 +42,7 @@ def main():
         frame_size=frame_size
     )
     train_frames, train_labels, test_frames, test_labels = sampler.sample_frames()
-    
-    # Creating PyTorch datasets
+
     train_dataset = VideoFrameDataset(train_frames, train_labels)
     test_dataset = VideoFrameDataset(test_frames, test_labels)
 
@@ -49,6 +58,17 @@ def main():
         train_dataset=train_dataset, 
         num_epochs=training_config.number_of_epochs
     )
+
+    evaluator = Evaluator(
+        model=model, 
+        batch_size=training_config.batch_size
+    )
+    accuracy, auc, precision, f1 = evaluator.evaluate(test_dataset=test_dataset)
+    
+    print(f"Accuracy: {accuracy:.4f}")
+    print(f"AUC: {auc:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"F1 Score: {f1:.4f}")
 
     torch.save(
         trained_model.state_dict(), 
