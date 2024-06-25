@@ -26,7 +26,7 @@ class Compressor:
             os.makedirs(output_subdir)
         
         if os.path.exists(output_path):
-            print(f"Skipping {output_path}, already exists.")
+            # print(f"Skipping {output_path}, already exists.")
             return
         
         self.run_ffmpeg_command(input_path, output_path)
