@@ -9,7 +9,6 @@ from dataloader import (
 
 from classification import (
     Classificator,
-    Visualizer,
     Trainer,
     Evaluator
 )
