@@ -1,6 +1,6 @@
 
 import torch
-from dataloader import TransformedData, Compressor
+from dataloader import TransformedData, Compressor, VideoDatasetSplitter
 from classification import Classificator, Visualizer, Trainer
 from config import dataset_config, training_config
 
@@ -11,6 +11,16 @@ def main():
         dataset_config.vid_compressed_dir
     )
     compressor.compress_videos()
+    
+    video_dataset_splitter = VideoDatasetSplitter(
+        original_dir=dataset_config.vid_original_dir, 
+        compressed_dir=dataset_config.vid_compressed_dir,
+        test_size=0.2, 
+        random_state=42
+    )
+    train_videos, test_videos = video_dataset_splitter.split_dataset()
+    
+    
     
     # data = TransformedData(
     #     img_dir=dataset_config.img_dir, 
