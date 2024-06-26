@@ -5,6 +5,8 @@ dataset_config = struct()
 dataset_config.vid_original_dir = '../data/videos/original'
 dataset_config.vid_compressed_dir = '../data/videos/compressed'
 
+dataset_config.frames_dir = '../data/frames'
+
 training_config = struct()
 
 training_config.number_of_epochs = 10

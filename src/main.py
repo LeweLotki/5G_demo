@@ -4,7 +4,8 @@ from dataloader import (
     Compressor, 
     VideoDatasetSplitter, 
     FrameSampler, 
-    VideoFrameDataset
+    VideoFrameDataset,
+    FrameLoader
 )
 
 from classification import (
@@ -38,9 +39,18 @@ def main():
     sampler = FrameSampler(
         train_videos=train_videos, 
         test_videos=test_videos,
+        output_dir=dataset_config.frames_dir,
         frame_size=frame_size
     )
-    train_frames, train_labels, test_frames, test_labels = sampler.sample_frames()
+    sampler.sample_frames()
+
+    loader = FrameLoader(input_dir=dataset_config.frames_dir)
+    (
+        train_frames, 
+        train_labels, 
+        test_frames, 
+        test_labels
+    ) = loader.load_frames()
 
     train_dataset = VideoFrameDataset(train_frames, train_labels)
     test_dataset = VideoFrameDataset(test_frames, test_labels)
