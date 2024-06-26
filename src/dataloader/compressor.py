@@ -40,7 +40,7 @@ class Compressor:
             self.ffmpeg_path,
             "-i", input_path,
             "-vcodec", "libx264",
-            "-crf", "45",
+            "-crf", "51",
             output_path
         ]
         subprocess.run(command)
