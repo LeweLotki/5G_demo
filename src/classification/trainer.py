@@ -3,11 +3,13 @@ from torch.utils.data import DataLoader
 import torch.optim as optim
 
 class Trainer:
-    def __init__(self, model, criterion, batch_size, learning_rate=0.001):
+    def __init__(self, model, criterion, batch_size, learning_rate=0.001, device=None):
         self.model = model
         self.criterion = criterion
         self.batch_size = batch_size
         self.learning_rate = learning_rate
+        self.device = device if device else ('cuda' if torch.cuda.is_available() else 'cpu')
+        self.model.to(self.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
         
     def train(self, train_dataset, num_epochs):
@@ -17,6 +19,7 @@ class Trainer:
             self.model.train()
             running_loss = 0.0
             for i, (inputs, labels) in enumerate(train_loader):
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
                 self.optimizer.zero_grad()
                 outputs = self.model(inputs)
                 loss = self.criterion(outputs, labels)

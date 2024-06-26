@@ -4,9 +4,11 @@ from torch.utils.data import DataLoader
 from sklearn.metrics import accuracy_score, roc_auc_score, precision_score, f1_score
 
 class Evaluator:
-    def __init__(self, model, batch_size):
+    def __init__(self, model, batch_size, device=None):
         self.model = model
         self.batch_size = batch_size
+        self.device = device if device else ('cuda' if torch.cuda.is_available() else 'cpu')
+        self.model.to(self.device)
 
     def evaluate(self, test_dataset):
         test_loader = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False)
@@ -17,6 +19,7 @@ class Evaluator:
         
         with torch.no_grad():
             for inputs, labels in test_loader:
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
                 outputs = self.model(inputs)
                 preds = torch.sigmoid(outputs).squeeze().cpu().numpy()
                 labels = labels.cpu().numpy()
@@ -38,3 +41,4 @@ class Evaluator:
         f1 = f1_score(all_labels, binary_preds)
         
         return accuracy, auc, precision, f1
+
