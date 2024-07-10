@@ -26,7 +26,7 @@ class Parser:
 
         predict_parser = parser.add_argument_group('Predict Mode')
         predict_parser.add_argument('-p', '--predict', action='store_true')
-        predict_parser.add_argument('--image_path', type=str, required=True, help='Path to the input image')
+        predict_parser.add_argument('--image_path', type=str, required=False, help='Path to the input image')
         
         return parser
 

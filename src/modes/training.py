@@ -19,6 +19,9 @@ from config import (
     training_config
 )
 
+import matplotlib.pyplot as plt
+import numpy as np
+
 class Training:
 
     def __init__(self):
@@ -64,7 +67,7 @@ class Training:
             batch_size=training_config.batch_size
         )
 
-        trained_model = trainer.train(
+        trained_model, loss_history = trainer.train(
             train_dataset=train_dataset, 
             num_epochs=training_config.number_of_epochs
         )
@@ -79,6 +82,9 @@ class Training:
         print(f"AUC: {auc:.4f}")
         print(f"Precision: {precision:.4f}")
         print(f"F1 Score: {f1:.4f}")
+
+        # plt.plot(loss_history)
+        # plt.show()
 
         torch.save(
             trained_model.state_dict(), 

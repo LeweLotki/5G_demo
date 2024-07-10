@@ -14,7 +14,8 @@ class Trainer:
         
     def train(self, train_dataset, num_epochs):
         train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
-        
+
+        loss_history = []
         for epoch in range(num_epochs):
             self.model.train()
             running_loss = 0.0
@@ -32,6 +33,7 @@ class Trainer:
                     running_loss = 0.0
                     
             print(f'Epoch [{epoch + 1}/{num_epochs}] completed. Loss: {running_loss:.4f}')
-        
-        return self.model
+            loss_history.append(running_loss)
+
+        return self.model, loss_history
 
