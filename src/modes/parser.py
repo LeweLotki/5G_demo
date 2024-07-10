@@ -3,7 +3,8 @@ import argparse
 
 from modes import (
     Training,
-    Predict
+    Predict,
+    Detect
 )
 
 from config import (
@@ -27,7 +28,11 @@ class Parser:
         predict_parser = parser.add_argument_group('Predict Mode')
         predict_parser.add_argument('-p', '--predict', action='store_true')
         predict_parser.add_argument('--image_path', type=str, required=False, help='Path to the input image')
-        
+
+        detect_parser = parser.add_argument_group('Detect Mode')
+        detect_parser.add_argument('-d', '--detect', action='store_true')
+        detect_parser.add_argument('--threshold', type=float, required=False, help='Threshold of detection')
+ 
         return parser
 
     def switch_mode(self):
@@ -41,6 +46,13 @@ class Parser:
             predict = Predict(training_config.save_model_path)
             prediction = predict.predict(args.image_path)
             print(f'Prediction for given image is:\n{prediction}')
+
+        elif args.detect:
+            detect = Detect()
+            detect.detect(
+                image_path=args.image_path,
+                threshold=args.threshold
+            )
 
         else: 
             Training()
