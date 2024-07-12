@@ -1,0 +1,8 @@
+/home/ai-6g/Pulpit/5G_demo/data/videos/original/th-bb/1df202642a5e74bda8c4d147ead7e3bd_1920x1080_30.mp4
+/home/ai-6g/Pulpit/5G_demo/data/videos/original/th-bb/34d24d9ae4df3f91eb4400bfff0df625_1920x1080_30.mp4
+/home/ai-6g/Pulpit/5G_demo/data/videos/original/th/08ee5edb9729f2ef9f23f013430ebad2_1920x1080_30.mp4
+/home/ai-6g/Pulpit/5G_demo/data/videos/original/th/6c9c96d33030b3b3879c691760492b14_1920x1080_30.mp4
+/home/ai-6g/Pulpit/5G_demo/data/videos/original/th-ob/bf651fe77adc82771c0b55a77b7ca8c4_1920x1080_30.mp4
+/home/ai-6g/Pulpit/5G_demo/data/videos/original/th-ob/dd7a7942248cc8f49f08c715d3184261_1920x1080_30.mp4
+/home/ai-6g/Pulpit/5G_demo/data/videos/original/th-m/323e380569b3571cb2e42f8288cbaeb6_1080x1920_30.mp4
+/home/ai-6g/Pulpit/5G_demo/data/videos/original/th-m/0296bcc0fdd2a47380e798289dcc099f_1080x1920_30.mp4
