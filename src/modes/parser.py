@@ -1,10 +1,13 @@
+import json
+
 from argparse import ArgumentParser
 import argparse
 
 from modes import (
     Training,
     Predict,
-    Detect
+    Detect,
+    Identification
 )
 
 from config import (
@@ -31,6 +34,11 @@ class Parser:
         detect_parser.add_argument('--dir_path', type=str, required=False, help='Path to the directory containing images')
         detect_parser.add_argument('--threshold', type=float, required=False, help='Threshold of detection')
 
+        identification_parser = parser.add_argument_group('Identification Mode')
+        identification_parser.add_argument('-i', '--identification', action='store_true')
+        identification_parser.add_argument('--faces_list', type=str, required=False, help='Path to the input image')
+        identification_parser.add_argument('--test_face', type=str, required=False, help='Path to the input image')
+
         return parser
 
     def switch_mode(self):
@@ -50,6 +58,16 @@ class Parser:
                 detect.detect(image_path=args.image_path, threshold=args.threshold)
             else:
                 print('Please provide either an image path or a directory path for detection.')
+        elif args.identification:
+
+            identification = Identification()
+            if args.faces_list and args.test_face:
+                faces_list = json.loads(args.faces_list)
+                identification.run(
+                    faces=faces_list, 
+                    path=args.test_face
+                )
+
         else:
             Training()
 

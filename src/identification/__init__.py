@@ -1,0 +1,1 @@
+from .facenet_identifier import FacenetIdentifier

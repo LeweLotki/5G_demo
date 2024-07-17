@@ -1,0 +1,2 @@
+python main.py -i --faces_list '["../data/frames/test_label_0/test_frame_0296bcc0fdd2a47380e798289dcc099f_1080x1920_30.mp4_12.jpg","../data/frames/test_label_0/test_frame_0296bcc0fdd2a47380e798289dcc099f_1080x1920_30.mp4_106.jpg"]' --test_face "../data/frames/test_label_0/test_frame_0296bcc0fdd2a47380e798289dcc099f_1080x1920_30.mp4_101.jpg"
+
