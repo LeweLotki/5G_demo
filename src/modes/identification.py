@@ -1,6 +1,7 @@
 import os
 import torch
 from identification import FacenetIdentifier
+from identification import FrameExtractor
 
 
 class Identification:
@@ -12,6 +13,12 @@ class Identification:
 
     def run(self, faces: list, path: str) -> None:
 
+        videos_dir = "../data/videos/original/all"
+        output_dir = "../data/persons"
+        
+        extractor = FrameExtractor(videos_dir, output_dir)
+        extractor.extract_frames()
+           
         for face in faces:
             self.__add_face(face)
 
