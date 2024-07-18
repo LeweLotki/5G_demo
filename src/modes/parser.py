@@ -36,7 +36,6 @@ class Parser:
 
         identification_parser = parser.add_argument_group('Identification Mode')
         identification_parser.add_argument('-i', '--identification', action='store_true')
-        identification_parser.add_argument('--faces_list', type=str, required=False, help='Path to the input image')
         identification_parser.add_argument('--test_face', type=str, required=False, help='Path to the input image')
 
         return parser
@@ -61,10 +60,8 @@ class Parser:
         elif args.identification:
 
             identification = Identification()
-            if args.faces_list and args.test_face:
-                faces_list = json.loads(args.faces_list)
+            if args.test_face:
                 identification.run(
-                    faces=faces_list, 
                     path=args.test_face
                 )
 
