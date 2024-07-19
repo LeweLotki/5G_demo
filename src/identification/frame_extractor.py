@@ -58,10 +58,48 @@ class FrameExtractor:
             else:
                 print(f"Failed to read frame {frame_idx}.")
 
-if __name__ == "__main__":
-    videos_dir = "../data/videos/original"
-    output_dir = "../data/persons"
-    
-    extractor = FrameExtractor(videos_dir, output_dir)
-    extractor.extract_frames()
+class TestFrameExtractor(FrameExtractor):
+    def __init__(self, videos_dir, output_dir, test_output_dir):
+        super().__init__(videos_dir, output_dir)
+        self.test_output_dir = test_output_dir
+
+    def extract_test_frames(self):
+        if not os.path.exists(self.test_output_dir):
+            os.makedirs(self.test_output_dir)
+
+        video_files = [f for f in os.listdir(self.videos_dir) if f.endswith('.mp4')]
+
+        for idx, video_file in enumerate(video_files):
+            person_dir = os.path.join(self.test_output_dir, f'person{idx}')
+            if not os.path.exists(person_dir):
+                os.makedirs(person_dir)
+
+            frame_files = [f for f in os.listdir(person_dir) if f.endswith('.jpg')]
+            if len(frame_files) >= 10:
+                continue
+
+            self.process_test_video(video_file, person_dir)
+
+    def process_test_video(self, video_file, person_dir):
+        video_path = os.path.join(self.videos_dir, video_file)
+        cap = cv2.VideoCapture(video_path)
+
+        if not cap.isOpened():
+            print(f"Error opening video file {video_file}")
+            return
+
+        fps = int(cap.get(cv2.CAP_PROP_FPS))
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+        start_frame = min(2 * fps, total_frames)
+        end_frame = min(8 * fps, total_frames)
+
+        if start_frame >= end_frame:
+            print(f"Video {video_file} is too short for the specified range.")
+            return
+
+        frame_indices = random.sample(range(start_frame, end_frame), 10)
+        self.save_frames(cap, person_dir, frame_indices, "test")
+
+        cap.release()
 

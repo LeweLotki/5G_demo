@@ -1,7 +1,7 @@
 import os
 import torch
 from identification import FacenetIdentifier
-from identification import FrameExtractor
+from identification import FrameExtractor, TestFrameExtractor
 
 
 class Identification:
@@ -12,10 +12,21 @@ class Identification:
     def run(self, path: str) -> None:
         videos_dir = "../data/videos/original/all"
         output_dir = "../data/persons"
-        
-        extractor = FrameExtractor(videos_dir, output_dir)
+        test_output_dir = "../data/persons/test"
+
+        extractor = FrameExtractor(
+            videos_dir=videos_dir, 
+            output_dir=output_dir
+        )
         extractor.extract_frames()
         
+        test_extractor = TestFrameExtractor(
+            videos_dir=videos_dir, 
+            output_dir=output_dir, 
+            test_output_dir=test_output_dir
+        )
+        test_extractor.extract_test_frames()
+
         self.load_and_add_faces(output_dir)
            
         self.__identify(path)
