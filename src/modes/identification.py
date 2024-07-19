@@ -61,6 +61,7 @@ class Identification:
                     frame_path = os.path.join(person_path, frame)
                     if frame_path.endswith('.jpg'):
                         identified_person = self.__identify(frame_path)
+                        print(f'face: {person_dir} identify as face: {identified_person}')
                         if identified_person == person_dir:
                             correct_identifications += 1
                         total_frames += 1
@@ -73,7 +74,8 @@ class Identification:
     
     def __identify(self, path: str) -> None: 
         self.facenet.train()
-        self.facenet.identify_face(path)
+        identified_person = self.facenet.identify_face(path)
+        return identified_person
 
     def __load_and_add_faces(self, base_dir: str) -> None:
         for person_dir in os.listdir(base_dir):
