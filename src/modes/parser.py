@@ -61,10 +61,11 @@ class Parser:
 
             identification = Identification()
             if args.test_face:
-                identification.run(
+                identification.identify_image(
                     path=args.test_face
                 )
-
+            else:
+                identification.identify_test_set()
         else:
             Training()
 
