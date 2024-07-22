@@ -3,10 +3,10 @@ import os
 import random
 
 class FrameExtractor:
-    def __init__(self, videos_dir, output_dir):
+    def __init__(self, videos_dir, output_dir, frame_count):
         self.videos_dir = videos_dir
         self.output_dir = output_dir
-        self.frame_count = 4
+        self.frame_count = frame_count 
 
     def extract_frames(self):
         if not os.path.exists(self.output_dir):
@@ -39,12 +39,16 @@ class FrameExtractor:
 
         first_second_frames = min(fps, total_frames)
         last_second_frames = min(fps, total_frames - (total_frames - fps))
-
-        first_second_indices = random.sample(range(first_second_frames), 2)
-        last_second_indices = random.sample(range(total_frames - fps, total_frames), 2)
-
+        
+        if self.frame_count == 1:
+            first_second_indices = random.sample(range(first_second_frames), self.frame_count)
+        else:
+            first_second_indices = random.sample(range(first_second_frames), self.frame_count // 2)
+            last_second_indices = random.sample(range(total_frames - fps, total_frames), self.frame_count // 2)
+ 
         self.save_frames(cap, person_dir, first_second_indices, "first")
-        self.save_frames(cap, person_dir, last_second_indices, "last")
+        if self.frame_count > 1:
+            self.save_frames(cap, person_dir, last_second_indices, "last")
 
         cap.release()
 
@@ -59,8 +63,8 @@ class FrameExtractor:
                 print(f"Failed to read frame {frame_idx}.")
 
 class TestFrameExtractor(FrameExtractor):
-    def __init__(self, videos_dir, output_dir, test_output_dir):
-        super().__init__(videos_dir, output_dir)
+    def __init__(self, videos_dir, output_dir, test_output_dir, frame_count=10):
+        super().__init__(videos_dir, output_dir,frame_count)
         self.test_output_dir = test_output_dir
 
     def extract_test_frames(self):

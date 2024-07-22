@@ -16,7 +16,8 @@ class Identification:
 
         extractor = FrameExtractor(
             videos_dir=videos_dir, 
-            output_dir=output_dir
+            output_dir=output_dir,
+            frame_count=4
         )
         extractor.extract_frames()
         
@@ -38,7 +39,8 @@ class Identification:
 
         extractor = FrameExtractor(
             videos_dir=videos_dir, 
-            output_dir=output_dir
+            output_dir=output_dir,
+            frame_count=4
         )
         extractor.extract_frames()
         
@@ -50,7 +52,10 @@ class Identification:
         test_extractor.extract_test_frames()
 
         self.__load_and_add_faces(output_dir)
-           
+        
+        self.__calculate_accuracy(test_output_dir)
+
+    def __calculate_accuracy(self, test_output_dir):
         correct_identifications = 0
         total_frames = 0
         
@@ -68,6 +73,8 @@ class Identification:
 
         accuracy = correct_identifications / total_frames
         print(f"Accuracy: {accuracy:.2%}")
+
+      
 
     def __add_face(self, path: str, label: str) -> None:
         self.facenet.add_face(path, label)
