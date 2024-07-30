@@ -1,12 +1,15 @@
 import os
 import subprocess
 import re
+import glob
 
 # Define the source file containing the list of video files with full paths
-SOURCE_FILE = "video_source_files_small.txt"
+SOURCE_FILE = "video_source_files.txt"
 
 # Define the base directory for the new compressed files
 DEST_BASE_DIR = "data_lj"
+VIDEO_DIR = os.path.join(DEST_BASE_DIR, "videos")
+FRAMES_DIR = os.path.join(DEST_BASE_DIR, "frames")
 
 # Define the resolutions and bitrates
 resolutions = ['384x216', '320x180', '240x135', '192x108']
@@ -17,15 +20,59 @@ bitrates = [
     [41, 21, 10]
 ]
 
+# Counter for person directories
+person_counter = 0
+
+# Function to compress the video
+def compress_video(input_file, output_file, resolution, bitrate):
+    ffmpeg_command = [
+        'ffmpeg', '-y', '-hide_banner', '-loglevel', 'quiet', '-i', input_file,
+        '-vf', f'scale={resolution}', '-b:v', f'{bitrate}k', '-c:v', 'libvpx-vp9', '-c:a', 'libopus', '-b:a', '128k',
+        output_file
+    ]
+    print(f"Running ffmpeg command: {' '.join(ffmpeg_command)}")
+    result = subprocess.run(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if result.returncode != 0:
+        print(f"ffmpeg error: {result.stderr.decode()}")
+
+# Function to extract frames from the compressed file
+def extract_frames(video_file, output_dir, base_name):
+    os.makedirs(output_dir, exist_ok=True)
+    ffmpeg_command = [
+        'ffmpeg', '-i', video_file,
+        os.path.join(output_dir, f'{base_name}_frame_%04d.png')
+    ]
+    print(f"Running ffmpeg command: {' '.join(ffmpeg_command)}")
+    result = subprocess.run(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if result.returncode != 0:
+        print(f"ffmpeg error: {result.stderr.decode()}")
+
+# Function to remove the first 30 and last 30 frames
+def remove_unwanted_frames(output_dir, base_name):
+    frames = sorted(glob.glob(os.path.join(output_dir, f'{base_name}_frame_*.png')))
+    if len(frames) > 60:
+        unwanted_frames = frames[:30] + frames[-30:]
+        for frame in unwanted_frames:
+            os.remove(frame)
+    else:
+        print(f"Not enough frames to remove from {output_dir}")
+
+# Function to extract the number before 'x' and after '_'
+def extract_number(filename):
+    match = re.search(r'_(\d+)x', filename)
+    if match:
+        return match.group(1)
+    return None
+
 # Function to process each file path
-def process_file(file_path):
+def process_file(file_path, person_id):
     print("START    =======================")
     print(file_path)
-    
+
     # Get the subdirectory (th, th-bb, etc.) and file name
     sub_dir = os.path.dirname(file_path).split('original/', 1)[-1]
     print(sub_dir)
-    
+
     file_name = os.path.basename(file_path)
     print(file_name)
 
@@ -34,7 +81,7 @@ def process_file(file_path):
     print(f"Extracted number: {number}")
 
     # Define the destination directory
-    dest_dir = os.path.join(DEST_BASE_DIR, sub_dir)
+    dest_dir = os.path.join(VIDEO_DIR, sub_dir, f'person{person_id}')
     os.makedirs(dest_dir, exist_ok=True)
 
     # Iterate through each resolution and its corresponding bitrates
@@ -43,30 +90,28 @@ def process_file(file_path):
         if number == '1080':
             res_parts = res.split('x')
             res = f"{res_parts[1]}x{res_parts[0]}"
-        
+
         for br in brs:
             # Define the destination file path for each resolution and bitrate
             dest_file = os.path.join(dest_dir, f"{file_name.rsplit('.', 1)[0]}_{res}_{br}.webm")
             print(dest_file)
 
-            # Run the ffmpeg command with suppressed output and overwrite option
-            ffmpeg_command = [
-                'ffmpeg', '-y', '-hide_banner', '-loglevel', 'quiet', '-i', file_path,
-                '-vf', f'scale={res}', '-b:v', f'{br}k', '-c:v', 'libvpx-vp9', '-c:a', 'libopus', '-b:a', '128k', dest_file
-            ]
-            subprocess.run(ffmpeg_command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+            # Run the ffmpeg command to compress the video
+            compress_video(file_path, dest_file, res, br)
 
-# Function to extract the number before 'x' and after '_'
-def extract_number(filename):
-    # Use regex to find the pattern that matches the number before 'x' and after '_'
-    match = re.search(r'_(\d+)x', filename)
-    if match:
-        return match.group(1)
-    return None
+            # Extract frames from the compressed file
+            frame_output_dir = os.path.join(FRAMES_DIR, sub_dir, f'person{person_id}')
+            base_name = f"{file_name.rsplit('.', 1)[0]}_{res}_{br}"
+            extract_frames(dest_file, frame_output_dir, base_name)
+
+            # Remove the first 30 and last 30 frames
+            remove_unwanted_frames(frame_output_dir, base_name)
 
 # Read each line from the source file
 with open(SOURCE_FILE, 'r') as file:
     for line in file:
         file_path = line.strip()
         if file_path:
-            process_file(file_path)
+            process_file(file_path, person_counter)
+            person_counter += 1
+
