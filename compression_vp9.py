@@ -1,7 +1,8 @@
 import os
-import subprocess
 import re
 import glob
+import subprocess
+import hashlib
 
 # Define the source file containing the list of video files with full paths
 SOURCE_FILE = "video_source_files.txt"
@@ -19,9 +20,6 @@ bitrates = [
     [65, 32, 16],
     [41, 21, 10]
 ]
-
-# Counter for person directories
-person_counter = 0
 
 # Function to compress the video
 def compress_video(input_file, output_file, resolution, bitrate):
@@ -64,11 +62,19 @@ def extract_number(filename):
         return match.group(1)
     return None
 
+# Function to generate a unique identifier for each file
+def generate_identifier(file_path):
+    return hashlib.md5(file_path.encode()).hexdigest()
+
 # Function to process each file path
-def process_file(file_path, person_id):
+def process_file(file_path):
     print("START    =======================")
     print(file_path)
 
+    # Generate a unique identifier for the video file
+    identifier = generate_identifier(file_path)
+    person_dir_name = f'person_{identifier}'
+    
     # Get the subdirectory (th, th-bb, etc.) and file name
     sub_dir = os.path.dirname(file_path).split('original/', 1)[-1]
     print(sub_dir)
@@ -81,7 +87,7 @@ def process_file(file_path, person_id):
     print(f"Extracted number: {number}")
 
     # Define the destination directory
-    dest_dir = os.path.join(VIDEO_DIR, sub_dir, f'person{person_id}')
+    dest_dir = os.path.join(VIDEO_DIR, sub_dir, person_dir_name)
     os.makedirs(dest_dir, exist_ok=True)
 
     # Iterate through each resolution and its corresponding bitrates
@@ -100,7 +106,7 @@ def process_file(file_path, person_id):
             compress_video(file_path, dest_file, res, br)
 
             # Extract frames from the compressed file
-            frame_output_dir = os.path.join(FRAMES_DIR, sub_dir, f'person{person_id}')
+            frame_output_dir = os.path.join(FRAMES_DIR, sub_dir, person_dir_name)
             base_name = f"{file_name.rsplit('.', 1)[0]}_{res}_{br}"
             extract_frames(dest_file, frame_output_dir, base_name)
 
@@ -112,6 +118,5 @@ with open(SOURCE_FILE, 'r') as file:
     for line in file:
         file_path = line.strip()
         if file_path:
-            process_file(file_path, person_counter)
-            person_counter += 1
+            process_file(file_path)
 

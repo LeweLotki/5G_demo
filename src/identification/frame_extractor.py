@@ -1,5 +1,6 @@
 import cv2
 import os
+import hashlib
 import random
 
 class FrameExtractor:
@@ -14,8 +15,9 @@ class FrameExtractor:
         
         video_files = [f for f in os.listdir(self.videos_dir) if f.endswith('.mp4')]
         
-        for idx, video_file in enumerate(video_files):
-            person_dir = os.path.join(self.output_dir, f'person{idx}')
+        for video_file in video_files:
+            person_dir_name = self.generate_identifier(video_file)
+            person_dir = os.path.join(self.output_dir, f'person_{person_dir_name}')
             if not os.path.exists(person_dir):
                 os.makedirs(person_dir)
             
@@ -62,9 +64,12 @@ class FrameExtractor:
             else:
                 print(f"Failed to read frame {frame_idx}.")
 
+    def generate_identifier(self, file_path):
+        return hashlib.md5(file_path.encode()).hexdigest()
+
 class TestFrameExtractor(FrameExtractor):
     def __init__(self, videos_dir, output_dir, test_output_dir, frame_count=10):
-        super().__init__(videos_dir, output_dir,frame_count)
+        super().__init__(videos_dir, output_dir, frame_count)
         self.test_output_dir = test_output_dir
 
     def extract_test_frames(self):
@@ -73,8 +78,9 @@ class TestFrameExtractor(FrameExtractor):
 
         video_files = [f for f in os.listdir(self.videos_dir) if f.endswith('.mp4')]
 
-        for idx, video_file in enumerate(video_files):
-            person_dir = os.path.join(self.test_output_dir, f'person{idx}')
+        for video_file in video_files:
+            person_dir_name = self.generate_identifier(video_file)
+            person_dir = os.path.join(self.test_output_dir, f'person_{person_dir_name}')
             if not os.path.exists(person_dir):
                 os.makedirs(person_dir)
 
