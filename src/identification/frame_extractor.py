@@ -65,6 +65,7 @@ class FrameExtractor:
                 print(f"Failed to read frame {frame_idx}.")
 
     def generate_identifier(self, file_path):
+        print(file_path.encode()) 
         return hashlib.md5(file_path.encode()).hexdigest()
 
 class TestFrameExtractor(FrameExtractor):

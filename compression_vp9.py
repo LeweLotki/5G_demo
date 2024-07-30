@@ -62,9 +62,9 @@ def extract_number(filename):
         return match.group(1)
     return None
 
-# Function to generate a unique identifier for each file
 def generate_identifier(file_path):
-    return hashlib.md5(file_path.encode()).hexdigest()
+    file_name = os.path.basename(file_path)
+    return hashlib.md5(file_name.encode()).hexdigest()
 
 # Function to process each file path
 def process_file(file_path):
