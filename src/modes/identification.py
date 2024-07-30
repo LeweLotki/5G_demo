@@ -36,6 +36,7 @@ class Identification:
         videos_dir = "../data/videos/original/all"
         output_dir = "../data/persons"
         test_output_dir = "../data/persons/test"
+        compressed_dir = "../data_lj/frames"
 
         extractor = FrameExtractor(
             videos_dir=videos_dir, 
@@ -53,28 +54,34 @@ class Identification:
 
         self.__load_and_add_faces(output_dir)
         
-        self.__calculate_accuracy(test_output_dir)
+        self.__calculate_accuracy(compressed_dir)
 
     def __calculate_accuracy(self, test_output_dir):
         correct_identifications = 0
         total_frames = 0
-        
-        for person_dir in os.listdir(test_output_dir):
-            person_path = os.path.join(test_output_dir, person_dir)
-            if os.path.isdir(person_path):
-                for frame in os.listdir(person_path):
-                    frame_path = os.path.join(person_path, frame)
-                    if frame_path.endswith('.jpg'):
-                        identified_person = self.__identify(frame_path)
-                        print(f'face: {person_dir} identify as face: {identified_person}')
-                        if identified_person == person_dir:
-                            correct_identifications += 1
-                        total_frames += 1
 
-        accuracy = correct_identifications / total_frames
-        print(f"Accuracy: {accuracy:.2%}")
+        try:
+            for sub_dir in os.listdir(test_output_dir):
+                sub_dir_path = os.path.join(test_output_dir, sub_dir)
+                if os.path.isdir(sub_dir_path):
+                    for person_dir in os.listdir(sub_dir_path):
+                        person_path = os.path.join(sub_dir_path, person_dir)
+                        if os.path.isdir(person_path):
+                            for frame in os.listdir(person_path):
+                                frame_path = os.path.join(person_path, frame)
+                                if frame_path.endswith('.jpg') or frame_path.endswith('.png'):
+                                    identified_person = self.__identify(frame_path)
+                                    print(f'face: {person_dir} identified as face: {identified_person}')
+                                    if identified_person == person_dir:
+                                        correct_identifications += 1
+                                    total_frames += 1
+        finally:
+            if total_frames > 0:
+                accuracy = correct_identifications / total_frames
+                print(f"Accuracy: {accuracy:.2%}")
+            else:
+                print("No frames to evaluate accuracy.")
 
-      
 
     def __add_face(self, path: str, label: str) -> None:
         self.facenet.add_face(path, label)
