@@ -56,7 +56,7 @@ class Identification:
         
         self.__calculate_accuracy(compressed_dir)
 
-    def __calculate_accuracy(self, test_output_dir, num_frames=10):
+    def __calculate_accuracy(self, test_output_dir, num_frames=100):
         correct_identifications = 0
         total_frames = 0
 
@@ -77,8 +77,8 @@ class Identification:
                             for frame in frame_files:
                                 frame_path = os.path.join(person_path, frame)
                                 print(f"Checking frame file: {frame_path}")
-                                identified_person = self.__identify(frame_path)
-                                print(f'face: {person_dir} identified as face: {identified_person}')
+                                identified_person, identification_probability = self.__identify(frame_path)
+                                print(f'face: {person_dir} identified as face: {identified_person} with probability: {identification_probability}')
                                 if identified_person == person_dir:
                                     correct_identifications += 1
                                 total_frames += 1
@@ -95,8 +95,8 @@ class Identification:
     
     def __identify(self, path: str) -> None: 
         self.facenet.train()
-        identified_person = self.facenet.identify_face(path)
-        return identified_person
+        identified_person, identification_probability = self.facenet.identify_face(path)
+        return identified_person, identification_probability
 
     def __load_and_add_faces(self, base_dir: str) -> None:
         for person_dir in os.listdir(base_dir):

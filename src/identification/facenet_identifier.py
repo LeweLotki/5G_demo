@@ -12,7 +12,7 @@ class FacenetIdentifier:
         self.mtcnn = MTCNN(keep_all=True, device=self.device)
         self.resnet = InceptionResnetV1(pretrained='vggface2').eval().to(self.device)
         self.encoder = LabelEncoder()
-        self.knn = KNeighborsClassifier(n_neighbors=1)
+        self.knn = KNeighborsClassifier(n_neighbors=5)
         self.embeddings = []
         self.labels = []
 
@@ -47,16 +47,18 @@ class FacenetIdentifier:
                 face = face.unsqueeze(0).to(self.device)
                 embedding = self.resnet(face).detach().cpu().numpy().flatten()
                 prediction = self.knn.predict([embedding])
+                probabilities = self.knn.predict_proba([embedding])
                 label = self.encoder.inverse_transform(prediction)
-                print(f"Identified face as: {label[0]}")
-                return label[0]
+                label_prob = probabilities[0][prediction[0]]
+                print(f"Identified face as: {label[0]} with probability: {label_prob:.2f}")
+                return label[0], label_prob
         else:
             print("No face detected in the image.")
-            return None
+            return None, None
 
 # Example usage
 if __name__ == "__main__":
-    face_identifier = FaceIdentifier()
+    face_identifier = FacenetIdentifier()
 
     # Add faces to the database
     face_identifier.add_face("path/to/image1.jpg", "Person1")
@@ -66,5 +68,6 @@ if __name__ == "__main__":
     face_identifier.train()
 
     # Identify a new face
-    face_identifier.identify_face("path/to/new_image.jpg")
+    label, probability = face_identifier.identify_face("path/to/new_image.jpg")
+    print(f"Label: {label}, Probability: {probability}")
 
